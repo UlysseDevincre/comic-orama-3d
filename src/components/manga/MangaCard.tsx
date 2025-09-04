@@ -3,18 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Manga } from "@/types/manga";
-import { BookOpen, Calendar, User, Plus, Minus } from "lucide-react";
+import { BookOpen, Calendar, User, Plus, Minus, PlusCircle } from "lucide-react"; // Import PlusCircle
 
 interface MangaCardProps {
   manga: Manga;
   onEdit: (manga: Manga) => void;
   onAddVolume: (mangaId: string, volume: number) => void;
   onRemoveVolume: (mangaId: string, volume: number) => void;
+  onAddAllVolumes: (mangaId: string) => void; // New prop for adding all volumes
 }
 
-export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaCardProps) {
+export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume, onAddAllVolumes }: MangaCardProps) {
   const completionPercentage = (manga.ownedVolumes.length / manga.totalVolumes) * 100;
-  
+  const isFullyOwned = manga.ownedVolumes.length === manga.totalVolumes;
+
   const getStatusColor = (status: Manga['status']) => {
     switch (status) {
       case 'completed': return 'bg-book-green';
@@ -26,7 +28,7 @@ export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaC
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300">
+    <Card className="hover:shadow-lg transition-shadow duration-300 flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg font-semibold line-clamp-2">
@@ -38,7 +40,7 @@ export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaC
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-grow flex flex-col">
         <div className="flex items-center gap-2 text-muted-foreground">
           <User className="w-4 h-4" />
           <span className="text-sm">{manga.author}</span>
@@ -62,10 +64,9 @@ export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaC
           <Progress value={completionPercentage} className="h-2" />
         </div>
 
-        {/* Volume Management */}
         <div className="space-y-2">
           <div className="text-sm font-medium">Volumes</div>
-          <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+          <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto p-1 border rounded-md">
             {Array.from({ length: manga.totalVolumes }, (_, i) => {
               const volume = i + 1;
               const isOwned = manga.ownedVolumes.includes(volume);
@@ -99,13 +100,26 @@ export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaC
           </div>
         </div>
         
-        <Button 
-          onClick={() => onEdit(manga)} 
-          variant="outline" 
-          className="w-full"
-        >
-          Edit Details
-        </Button>
+        {/* Action buttons at the bottom */}
+        <div className="mt-auto pt-4 space-y-2">
+          {!isFullyOwned && (
+            <Button 
+              onClick={() => onAddAllVolumes(manga.id)} 
+              variant="secondary" 
+              className="w-full"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Add All Volumes
+            </Button>
+          )}
+          <Button 
+            onClick={() => onEdit(manga)} 
+            variant="outline" 
+            className="w-full"
+          >
+            Edit Details
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

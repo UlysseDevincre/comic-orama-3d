@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bookshelf3D } from "@/components/manga/Bookshelf3D";
@@ -10,7 +9,6 @@ import { Manga } from "@/types/manga";
 import { BookOpen, Eye, Library } from "lucide-react";
 import { toast } from "sonner";
 
-// Sample data to showcase the app
 const initialMangaData: Manga[] = [
   {
     id: '1',
@@ -69,11 +67,30 @@ const initialMangaData: Manga[] = [
   }
 ];
 
+const STORAGE_KEY = 'manga-collection';
+
 const Index = () => {
-  const [mangaList, setMangaList] = useState<Manga[]>(initialMangaData);
+  const [mangaList, setMangaList] = useState<Manga[]>(() => {
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      return savedData ? JSON.parse(savedData) : initialMangaData;
+    } catch (error) {
+      console.error("Failed to parse manga data from localStorage", error);
+      return initialMangaData;
+    }
+  });
+
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [activeTab, setActiveTab] = useState('3d');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mangaList));
+    } catch (error) {
+      console.error("Failed to save manga data to localStorage", error);
+    }
+  }, [mangaList]);
 
   const handleAddManga = (newManga: Omit<Manga, 'id'>) => {
     const manga: Manga = {
@@ -112,13 +129,24 @@ const Index = () => {
     toast.success(`Removed volume ${volume} from collection`);
   };
 
+  // New handler function for adding all volumes
+  const handleAddAllVolumes = (mangaId: string) => {
+    setMangaList(prev => prev.map(manga => {
+      if (manga.id === mangaId) {
+        const allVolumes = Array.from({ length: manga.totalVolumes }, (_, i) => i + 1);
+        toast.success(`Added all ${manga.totalVolumes} volumes of "${manga.title}"!`);
+        return { ...manga, ownedVolumes: allVolumes };
+      }
+      return manga;
+    }));
+  };
+
   const totalVolumes = mangaList.reduce((sum, manga) => sum + manga.totalVolumes, 0);
   const ownedVolumes = mangaList.reduce((sum, manga) => sum + manga.ownedVolumes.length, 0);
-  const completedSeries = mangaList.filter(manga => manga.status === 'completed').length;
+  const completedSeries = mangaList.filter(manga => manga.ownedVolumes.length === manga.totalVolumes).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -136,7 +164,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Stats Overview */}
       <div className="container mx-auto px-6 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
@@ -167,7 +194,6 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
             <TabsTrigger value="3d" className="flex items-center gap-2">
@@ -193,7 +219,7 @@ const Index = () => {
               </CardContent>
             </Card>
             <div className="text-center text-sm text-muted-foreground mt-4">
-              Click and drag to rotate • Scroll to zoom • Click books to select
+              Drag up/down to move camera • Scroll to zoom • Click books to select
             </div>
           </TabsContent>
           
@@ -206,6 +232,7 @@ const Index = () => {
                   onEdit={handleEditManga}
                   onAddVolume={handleAddVolume}
                   onRemoveVolume={handleRemoveVolume}
+                  onAddAllVolumes={handleAddAllVolumes} // Pass the new handler
                 />
               ))}
             </div>

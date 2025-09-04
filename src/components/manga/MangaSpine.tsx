@@ -16,8 +16,9 @@ export function MangaSpine({ title, author, volume, color, position, onSelect, i
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
   
-  const spineColor = isOwned ? getBookColor(color) : '#2a2a2a';
-  const opacity = isOwned ? 1 : 0.3;
+  // Fix: Lighter color and higher opacity for unowned books
+  const spineColor = isOwned ? getBookColor(color) : '#888888';
+  const opacity = isOwned ? 1 : 0.5;
   
   return (
     <group position={position}>
@@ -48,7 +49,7 @@ export function MangaSpine({ title, author, volume, color, position, onSelect, i
             anchorX="center"
             anchorY="middle"
             maxWidth={1.8}
-            font="/fonts/inter-medium.woff"
+            // Fix: Removed the font prop that was causing the error
           >
             {title}
           </Text>
