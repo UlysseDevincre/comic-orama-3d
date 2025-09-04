@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bookshelf3D } from "@/components/manga/Bookshelf3D";
 import { MangaCard } from "@/components/manga/MangaCard";
 import { AddMangaDialog } from "@/components/manga/AddMangaDialog";
+import { EditMangaDialog } from "@/components/manga/EditMangaDialog";
 import { Manga } from "@/types/manga";
 import { BookOpen, Eye, Library } from "lucide-react";
 import { toast } from "sonner";
@@ -18,11 +19,9 @@ const initialMangaData: Manga[] = [
     totalVolumes: 106,
     ownedVolumes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     status: 'ongoing',
-    genre: ['Adventure', 'Comedy', 'Shounen'],
     startYear: 1997,
     color: 'blue',
-    description: 'Follow Monkey D. Luffy as he explores the Grand Line to find One Piece and become Pirate King.',
-    rating: 9.5
+    description: 'Follow Monkey D. Luffy as he explores the Grand Line to find One Piece and become Pirate King.'
   },
   {
     id: '2',
@@ -31,11 +30,9 @@ const initialMangaData: Manga[] = [
     totalVolumes: 34,
     ownedVolumes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34],
     status: 'completed',
-    genre: ['Action', 'Drama', 'Fantasy'],
     startYear: 2009,
     color: 'red',
-    description: 'Humanity fights for survival against giant humanoid Titans.',
-    rating: 9.2
+    description: 'Humanity fights for survival against giant humanoid Titans.'
   },
   {
     id: '3',
@@ -44,11 +41,9 @@ const initialMangaData: Manga[] = [
     totalVolumes: 23,
     ownedVolumes: [1, 2, 3, 4, 5],
     status: 'completed',
-    genre: ['Action', 'Historical', 'Supernatural'],
     startYear: 2016,
     color: 'green',
-    description: 'Tanjiro becomes a demon slayer to save his sister and avenge his family.',
-    rating: 8.7
+    description: 'Tanjiro becomes a demon slayer to save his sister and avenge his family.'
   },
   {
     id: '4',
@@ -57,11 +52,9 @@ const initialMangaData: Manga[] = [
     totalVolumes: 38,
     ownedVolumes: [1, 2, 3, 4, 5, 6, 7, 8],
     status: 'ongoing',
-    genre: ['Action', 'School', 'Superhero'],
     startYear: 2014,
     color: 'orange',
-    description: 'In a world of superheroes, Izuku dreams of becoming the greatest hero.',
-    rating: 8.9
+    description: 'In a world of superheroes, Izuku dreams of becoming the greatest hero.'
   },
   {
     id: '5',
@@ -70,11 +63,9 @@ const initialMangaData: Manga[] = [
     totalVolumes: 12,
     ownedVolumes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     status: 'completed',
-    genre: ['Psychological', 'Supernatural', 'Thriller'],
     startYear: 2003,
     color: 'purple',
-    description: 'Light Yagami finds a notebook that can kill anyone whose name is written in it.',
-    rating: 9.0
+    description: 'Light Yagami finds a notebook that can kill anyone whose name is written in it.'
   }
 ];
 
@@ -82,6 +73,7 @@ const Index = () => {
   const [mangaList, setMangaList] = useState<Manga[]>(initialMangaData);
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [activeTab, setActiveTab] = useState('3d');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleAddManga = (newManga: Omit<Manga, 'id'>) => {
     const manga: Manga = {
@@ -93,8 +85,13 @@ const Index = () => {
 
   const handleEditManga = (manga: Manga) => {
     setSelectedManga(manga);
-    // TODO: Open edit dialog
-    toast.info(`Editing functionality coming soon for "${manga.title}"`);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateManga = (updatedManga: Manga) => {
+    setMangaList(prev => prev.map(manga => 
+      manga.id === updatedManga.id ? updatedManga : manga
+    ));
   };
 
   const handleAddVolume = (mangaId: string, volume: number) => {
@@ -215,6 +212,13 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <EditMangaDialog
+        manga={selectedManga}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onEdit={handleUpdateManga}
+      />
     </div>
   );
 };

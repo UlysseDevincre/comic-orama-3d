@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Manga } from "@/types/manga";
-import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-interface AddMangaDialogProps {
-  onAdd: (manga: Omit<Manga, 'id'>) => void;
+interface EditMangaDialogProps {
+  manga: Manga | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: (manga: Manga) => void;
 }
 
 const bookColors = [
@@ -29,63 +31,63 @@ const statusOptions = [
   { value: 'dropped', label: 'Dropped' },
 ];
 
-export function AddMangaDialog({ onAdd }: AddMangaDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditMangaDialog({ manga, open, onOpenChange, onEdit }: EditMangaDialogProps) {
   const [formData, setFormData] = useState({
-    title: '',
-    author: '',
-    totalVolumes: '',
-    status: 'planned' as Manga['status'],
-    startYear: '',
-    color: 'blue' as Manga['color'],
-    description: ''
+    title: manga?.title || '',
+    author: manga?.author || '',
+    totalVolumes: manga?.totalVolumes?.toString() || '',
+    status: manga?.status || 'planned' as Manga['status'],
+    startYear: manga?.startYear?.toString() || '',
+    color: manga?.color || 'blue' as Manga['color'],
+    description: manga?.description || ''
+  });
+
+  // Update form data when manga prop changes
+  useState(() => {
+    if (manga) {
+      setFormData({
+        title: manga.title,
+        author: manga.author,
+        totalVolumes: manga.totalVolumes.toString(),
+        status: manga.status,
+        startYear: manga.startYear.toString(),
+        color: manga.color,
+        description: manga.description || ''
+      });
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.author || !formData.totalVolumes) {
+    if (!formData.title || !formData.author || !formData.totalVolumes || !manga) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    const newManga: Omit<Manga, 'id'> = {
+    const updatedManga: Manga = {
+      ...manga,
       title: formData.title,
       author: formData.author,
       totalVolumes: parseInt(formData.totalVolumes),
-      ownedVolumes: [],
       status: formData.status,
       startYear: parseInt(formData.startYear) || new Date().getFullYear(),
       color: formData.color,
       description: formData.description || undefined,
     };
 
-    onAdd(newManga);
-    setFormData({
-      title: '',
-      author: '',
-      totalVolumes: '',
-      status: 'planned',
-      startYear: '',
-      color: 'blue',
-      description: ''
-    });
-    setOpen(false);
-    toast.success(`Added "${formData.title}" to your collection!`);
+    onEdit(updatedManga);
+    onOpenChange(false);
+    toast.success(`Updated "${formData.title}"`);
   };
 
+  if (!manga) return null;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-primary to-primary-glow hover:shadow-lg">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Manga
-        </Button>
-      </DialogTrigger>
-      
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Manga Series</DialogTitle>
+          <DialogTitle>Edit Manga Series</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -185,11 +187,11 @@ export function AddMangaDialog({ onAdd }: AddMangaDialogProps) {
           </div>
           
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
             <Button type="submit" className="flex-1">
-              Add Manga
+              Update Manga
             </Button>
           </div>
         </form>

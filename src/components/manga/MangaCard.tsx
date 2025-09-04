@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Manga } from "@/types/manga";
-import { BookOpen, Calendar, Star, User, Plus, Minus } from "lucide-react";
+import { BookOpen, Calendar, User, Plus, Minus } from "lucide-react";
 
 interface MangaCardProps {
   manga: Manga;
@@ -60,26 +60,6 @@ export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaC
             </span>
           </div>
           <Progress value={completionPercentage} className="h-2" />
-        </div>
-        
-        {manga.rating && (
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-accent text-accent" />
-            <span className="text-sm font-medium">{manga.rating}/10</span>
-          </div>
-        )}
-        
-        <div className="flex flex-wrap gap-1">
-          {manga.genre.slice(0, 3).map((genre) => (
-            <Badge key={genre} variant="secondary" className="text-xs">
-              {genre}
-            </Badge>
-          ))}
-          {manga.genre.length > 3 && (
-            <Badge variant="secondary" className="text-xs">
-              +{manga.genre.length - 3}
-            </Badge>
-          )}
         </div>
 
         {/* Volume Management */}
