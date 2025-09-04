@@ -3,14 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Manga } from "@/types/manga";
-import { BookOpen, Calendar, Star, User } from "lucide-react";
+import { BookOpen, Calendar, Star, User, Plus, Minus } from "lucide-react";
 
 interface MangaCardProps {
   manga: Manga;
   onEdit: (manga: Manga) => void;
+  onAddVolume: (mangaId: string, volume: number) => void;
+  onRemoveVolume: (mangaId: string, volume: number) => void;
 }
 
-export function MangaCard({ manga, onEdit }: MangaCardProps) {
+export function MangaCard({ manga, onEdit, onAddVolume, onRemoveVolume }: MangaCardProps) {
   const completionPercentage = (manga.ownedVolumes.length / manga.totalVolumes) * 100;
   
   const getStatusColor = (status: Manga['status']) => {
@@ -78,6 +80,43 @@ export function MangaCard({ manga, onEdit }: MangaCardProps) {
               +{manga.genre.length - 3}
             </Badge>
           )}
+        </div>
+
+        {/* Volume Management */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium">Volumes</div>
+          <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+            {Array.from({ length: manga.totalVolumes }, (_, i) => {
+              const volume = i + 1;
+              const isOwned = manga.ownedVolumes.includes(volume);
+              return (
+                <div key={volume} className="flex items-center justify-between p-1 rounded border border-border/50">
+                  <span className={`text-xs ${isOwned ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {volume}
+                  </span>
+                  {isOwned ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-4 w-4 p-0 hover:bg-destructive/20"
+                      onClick={() => onRemoveVolume(manga.id, volume)}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-4 w-4 p-0 hover:bg-primary/20"
+                      onClick={() => onAddVolume(manga.id, volume)}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
         
         <Button 

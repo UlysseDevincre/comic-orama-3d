@@ -97,6 +97,24 @@ const Index = () => {
     toast.info(`Editing functionality coming soon for "${manga.title}"`);
   };
 
+  const handleAddVolume = (mangaId: string, volume: number) => {
+    setMangaList(prev => prev.map(manga => 
+      manga.id === mangaId 
+        ? { ...manga, ownedVolumes: [...manga.ownedVolumes, volume].sort((a, b) => a - b) }
+        : manga
+    ));
+    toast.success(`Added volume ${volume} to collection`);
+  };
+
+  const handleRemoveVolume = (mangaId: string, volume: number) => {
+    setMangaList(prev => prev.map(manga => 
+      manga.id === mangaId 
+        ? { ...manga, ownedVolumes: manga.ownedVolumes.filter(v => v !== volume) }
+        : manga
+    ));
+    toast.success(`Removed volume ${volume} from collection`);
+  };
+
   const totalVolumes = mangaList.reduce((sum, manga) => sum + manga.totalVolumes, 0);
   const ownedVolumes = mangaList.reduce((sum, manga) => sum + manga.ownedVolumes.length, 0);
   const completedSeries = mangaList.filter(manga => manga.status === 'completed').length;
@@ -189,6 +207,8 @@ const Index = () => {
                   key={manga.id}
                   manga={manga}
                   onEdit={handleEditManga}
+                  onAddVolume={handleAddVolume}
+                  onRemoveVolume={handleRemoveVolume}
                 />
               ))}
             </div>
